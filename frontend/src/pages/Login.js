@@ -9,7 +9,7 @@ function Login() {
 
   const onFinish = (values) => {
     setLoading(true);
-    fetch('http://localhost:5000/api/login', {  // 开发时使用本地地址，部署后需要替换为后端地址或通过 nginx 反向代理
+    fetch('/api/login', {  // 开发时使用本地地址，部署后需要替换为后端地址或通过 nginx 反向代理
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values)

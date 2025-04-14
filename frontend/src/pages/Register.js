@@ -13,7 +13,7 @@ function Register() {
       return;
     }
     setLoading(true);
-    fetch('http://localhost:5000/api/register', {
+    fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: values.username, password: values.password })
