@@ -1,7 +1,7 @@
-// frontend/src/pages/Login.js
 import { Form, Input, Button } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { API_BASE_URL } from '../config';  // ✅ 新增：引入接口地址配置
 
 function Login() {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ function Login() {
 
   const onFinish = (values) => {
     setLoading(true);
-    fetch('/api/login', {  // 开发时使用本地地址，部署后需要替换为后端地址或通过 nginx 反向代理
+    fetch(`${API_BASE_URL}/login`, {   // ✅ 修改这里
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values)
@@ -18,7 +18,6 @@ function Login() {
       .then(data => {
         setLoading(false);
         if(data.code === 200){
-          // 登录成功后跳转到 home 页面
           navigate('/home');
         } else {
           alert(data.message || '登录失败');
