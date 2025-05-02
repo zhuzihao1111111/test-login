@@ -1,48 +1,45 @@
-import { Form, Input, Button } from 'antd';
+// frontend/src/pages/Login.js
+import React, { useState } from 'react';
+import { Form, Input, Button, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { API_BASE_URL } from '../config';  // ✅ 新增：引入接口地址配置
+import axios from 'axios';  // 新增
 
-function Login() {
+export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/login`, {   // ✅ 修改这里
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values)
-    })
-      .then(res => res.json())
-      .then(data => {
-        setLoading(false);
-        if(data.code === 200){
-          navigate('/home');
-        } else {
-          alert(data.message || '登录失败');
+    try {
+      const res = await axios.post(
+        '/api/login',
+        values,
+        {
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' },
         }
-      })
-      .catch(err => {
-        setLoading(false);
-        alert('网络错误');
-      });
+      );
+      if (res.data.code === 200) {
+        message.success('登录成功');
+        navigate('/home');
+      } else {
+        message.error(res.data.message || '登录失败');
+      }
+    } catch (err) {
+      message.error('网络错误');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={{ maxWidth: 300, margin: '50px auto' }}>
       <h2>登录</h2>
-      <Form name="login" onFinish={onFinish}>
-        <Form.Item 
-          name="username" 
-          rules={[{ required: true, message: '请输入用户名!' }]}
-        >
+      <Form name="login" onFinish={onFinish} layout="vertical">
+        <Form.Item name="username" rules={[{ required: true, message: '请输入用户名!' }]}>
           <Input placeholder="用户名" />
         </Form.Item>
-        <Form.Item 
-          name="password" 
-          rules={[{ required: true, message: '请输入密码!' }]}
-        >
+        <Form.Item name="password" rules={[{ required: true, message: '请输入密码!' }]}>
           <Input.Password placeholder="密码" />
         </Form.Item>
         <Form.Item>
@@ -51,11 +48,9 @@ function Login() {
           </Button>
         </Form.Item>
       </Form>
-      <div>
+      <div style={{ textAlign: 'center' }}>
         还没有账号？ <Link to="/register">注册</Link>
       </div>
     </div>
   );
 }
-
-export default Login;

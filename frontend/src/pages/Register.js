@@ -1,60 +1,52 @@
-import { Form, Input, Button } from 'antd';
-import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { API_BASE_URL } from '../config';  // ✅ 引入配置变量
+// frontend/src/pages/Register.js
+import React, { useState } from 'react';
+import { Form, Input, Button, message } from 'antd';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';  // 新增
 
-function Register() {
+export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     if (values.password !== values.confirm) {
-      alert("两次密码不一致");
+      message.error('两次输入密码不一致');
       return;
     }
-
     setLoading(true);
-    fetch(`${API_BASE_URL}/register`, {  // ✅ 使用配置变量拼接完整 URL
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: values.username, password: values.password })
-    })
-      .then(res => res.json())
-      .then(data => {
-        setLoading(false);
-        if (data.code === 200) {
-          alert('注册成功，请登录');
-          navigate('/login');
-        } else {
-          alert(data.message || '注册失败');
+    try {
+      const res = await axios.post(
+        '/api/register',
+        { username: values.username, password: values.password },
+        {
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' },
         }
-      })
-      .catch(err => {
-        setLoading(false);
-        alert('网络错误');
-      });
+      );
+      if (res.data.code === 200) {
+        message.success('注册成功，即将跳转登录');
+        setTimeout(() => navigate('/login'), 1000);
+      } else {
+        message.error(res.data.message || '注册失败');
+      }
+    } catch (err) {
+      message.error('网络错误');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={{ maxWidth: 300, margin: '50px auto' }}>
       <h2>注册</h2>
-      <Form name="register" onFinish={onFinish}>
-        <Form.Item
-          name="username"
-          rules={[{ required: true, message: '请输入用户名!' }]}
-        >
+      <Form name="register" onFinish={onFinish} layout="vertical">
+        <Form.Item name="username" rules={[{ required: true, message: '请输入用户名!' }]}>
           <Input placeholder="用户名" />
         </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: '请输入密码!' }]}
-        >
+        <Form.Item name="password" rules={[{ required: true, message: '请输入密码!' }]}>
           <Input.Password placeholder="密码" />
         </Form.Item>
-        <Form.Item
-          name="confirm"
-          rules={[{ required: true, message: '请确认密码!' }]}
-        >
+        <Form.Item name="confirm" rules={[{ required: true, message: '请确认密码!' }]}>
           <Input.Password placeholder="确认密码" />
         </Form.Item>
         <Form.Item>
@@ -63,11 +55,9 @@ function Register() {
           </Button>
         </Form.Item>
       </Form>
-      <div>
+      <div style={{ textAlign: 'center' }}>
         已有账号？ <Link to="/login">登录</Link>
       </div>
     </div>
   );
 }
-
-export default Register;
